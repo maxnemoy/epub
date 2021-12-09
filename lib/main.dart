@@ -4,6 +4,7 @@ import 'package:epub_view/epub_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show SystemChrome, SystemUiOverlayStyle, rootBundle;
+import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 void main() => runApp(MyApp());
 
@@ -77,6 +78,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late EpubController _epubReaderController;
+  late PanelController _panelController;
+  String txt = "";
 
   @override
   void initState() {
@@ -90,6 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // epubCfi:
       //     'epubcfi(/6/6[chapter-2]!/4/2/1612)', // book_2.epub Chapter 16 paragraph 3
     );
+    _panelController = PanelController();
     super.initState();
   }
 
@@ -125,13 +129,48 @@ class _MyHomePageState extends State<MyHomePage> {
         drawer: Drawer(
           child: EpubReaderTableOfContents(controller: _epubReaderController),
         ),
-        body: EpubView(
-          onExternalLinkPressed: (href){print(href);},
+        body: SlidingUpPanel(
+          minHeight: 0,
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+          controller: _panelController,
+          onPanelClosed: (){
+            //_panelController.hide();
+           // _panelController.
+          },
+          panel: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 40, left: 30),
+              child: Text("Примечание ##"),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 10, left: 30),
+              child: Container(
+                height: 2,
+                width: double.infinity,
+                color: Colors.amber, ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Text(txt),
+            )
+          ],),
+          body: EpubView(
+          onInternalLinkPressed: (text){
+            setState(() {
+              txt = text;
+              print(txt);
+             // _panelController.show();
+              _panelController.open();
+            });
+          },
           controller: _epubReaderController,
           onDocumentLoaded: (document) {
             print('isLoaded: $document');
           },
           dividerBuilder: (_) => Divider(),
+        ),
         ),
       );
 

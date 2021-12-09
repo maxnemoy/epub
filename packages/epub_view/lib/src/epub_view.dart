@@ -37,12 +37,14 @@ typedef ChaptersBuilder = Widget Function(
 );
 
 typedef ExternalLinkPressed = void Function(String href);
+typedef InternalLinkPressed = void Function(String text);
 
 class EpubView extends StatefulWidget {
   const EpubView({
     required this.controller,
     this.itemBuilder,
     this.onExternalLinkPressed,
+    this.onInternalLinkPressed,
     this.loaderSwitchDuration,
     this.loader,
     this.errorBuilder,
@@ -58,6 +60,7 @@ class EpubView extends StatefulWidget {
 
   final EpubController controller;
   final ExternalLinkPressed? onExternalLinkPressed;
+  final InternalLinkPressed? onInternalLinkPressed;
 
   /// Show document loading error message inside [EpubView]
   final Widget Function(Exception? error)? errorBuilder;
@@ -229,7 +232,11 @@ class _EpubViewState extends State<EpubView> {
           chapter: chapter,
           paragraphIndex: paragraphIndex,
         );
-        _gotoEpubCfi(cfi);
+        if(widget.onInternalLinkPressed == null ){
+          _gotoEpubCfi(cfi);
+        } else{
+          widget.onInternalLinkPressed!(paragraph.element.text);
+        }
       }
 
       return;
