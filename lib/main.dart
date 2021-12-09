@@ -80,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late EpubController _epubReaderController;
   late PanelController _panelController;
   String txt = "";
+  int index = 0;
 
   @override
   void initState() {
@@ -142,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
             Padding(
               padding: const EdgeInsets.only(top: 40, left: 30),
-              child: Text("Примечание ##"),
+              child: Text("Примечание $index"),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 10, left: 30),
@@ -152,14 +153,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.amber, ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.only(left: 40, right: 20),
               child: Text(txt),
             )
           ],),
           body: EpubView(
-          onInternalLinkPressed: (text){
+          onInternalLinkPressed: (refIndex, text){
             setState(() {
               txt = text;
+              index = refIndex;
               print(txt);
              // _panelController.show();
               _panelController.open();

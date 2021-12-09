@@ -37,7 +37,7 @@ typedef ChaptersBuilder = Widget Function(
 );
 
 typedef ExternalLinkPressed = void Function(String href);
-typedef InternalLinkPressed = void Function(String text);
+typedef InternalLinkPressed = void Function(int index, String text);
 
 class EpubView extends StatefulWidget {
   const EpubView({
@@ -234,8 +234,9 @@ class _EpubViewState extends State<EpubView> {
         );
         if(widget.onInternalLinkPressed == null ){
           _gotoEpubCfi(cfi);
-        } else{
-          widget.onInternalLinkPressed!(paragraph.element.text);
+        } else{    
+          final List<String> words = paragraph.element.text.trim().split(String.fromCharCode(9));
+          widget.onInternalLinkPressed!(int.parse(words[0]), words[1]);
         }
       }
 
