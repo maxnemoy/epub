@@ -4,7 +4,7 @@ import 'package:epub_view/epub_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show SystemChrome, SystemUiOverlayStyle, rootBundle;
-import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:slide_panel/slide_panel.dart';
 
 void main() => runApp(MyApp());
 
@@ -78,7 +78,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late EpubController _epubReaderController;
-  late PanelController _panelController;
+  late SlidePanelController _controller;
   String txt = "";
   int index = 0;
 
@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // epubCfi:
       //     'epubcfi(/6/6[chapter-2]!/4/2/1612)', // book_2.epub Chapter 16 paragraph 3
     );
-    _panelController = PanelController();
+    _controller = SlidePanelController();
     super.initState();
   }
 
@@ -111,60 +111,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: EpubActualChapter(
-            controller: _epubReaderController,
-            builder: (chapterValue) => Text(
-              (chapterValue?.chapter?.Title?.trim() ?? '').replaceAll('\n', ''),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.save_alt),
-              color: Colors.white,
-              onPressed: () => _showCurrentEpubCfi(context),
-            ),
-          ],
-        ),
-        drawer: Drawer(
-          child: EpubReaderTableOfContents(controller: _epubReaderController),
-        ),
-        body: SlidingUpPanel(
-          minHeight: 0,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
-          controller: _panelController,
-          onPanelClosed: (){
-            //_panelController.hide();
-           // _panelController.
-          },
-          panel: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 40, left: 30),
-              child: Text("Примечание $index"),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 10, left: 30),
-              child: Container(
-                height: 2,
-                width: double.infinity,
-                color: Colors.amber, ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 40, right: 20),
-              child: Text(txt),
-            )
-          ],),
-          body: EpubView(
+        // appBar: AppBar(
+        //   title: EpubActualChapter(
+        //     controller: _epubReaderController,
+        //     builder: (chapterValue) => Text(
+        //       (chapterValue?.chapter?.Title?.trim() ?? '').replaceAll('\n', ''),
+        //       textAlign: TextAlign.start,
+        //     ),
+        //   ),
+        //   actions: <Widget>[
+        //     IconButton(
+        //       icon: Icon(Icons.save_alt),
+        //       color: Colors.white,
+        //       onPressed: () => _showCurrentEpubCfi(context),
+        //     ),
+        //   ],
+        // ),
+        // drawer: Drawer(
+        //   child: EpubReaderTableOfContents(controller: _epubReaderController),
+        // ),
+        body: SlidePanel(
+          controller: _controller,
+          title: "Примечание $index",
+          body: Text(txt),
+          child: EpubView(
           onInternalLinkPressed: (refIndex, text){
             setState(() {
               txt = text;
               index = refIndex;
               print(txt);
              // _panelController.show();
-              _panelController.open();
+              _controller.showPanel();
             });
           },
           controller: _epubReaderController,
