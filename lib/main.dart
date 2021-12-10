@@ -88,11 +88,6 @@ class _MyHomePageState extends State<MyHomePage> {
         _loadFromAssets('assets/1.epub');
     _epubReaderController = EpubController(
       document: EpubReader.readBook(loadedBook),
-      //  document: EpubReader,
-      // epubCfi:
-      //     'epubcfi(/6/26[id4]!/4/2/2[id4]/22)', // book.epub Chapter 3 paragraph 10
-      // epubCfi:
-      //     'epubcfi(/6/6[chapter-2]!/4/2/1612)', // book_2.epub Chapter 16 paragraph 3
     );
     _controller = SlidePanelController();
     super.initState();
@@ -111,25 +106,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        // appBar: AppBar(
-        //   title: EpubActualChapter(
-        //     controller: _epubReaderController,
-        //     builder: (chapterValue) => Text(
-        //       (chapterValue?.chapter?.Title?.trim() ?? '').replaceAll('\n', ''),
-        //       textAlign: TextAlign.start,
-        //     ),
-        //   ),
-        //   actions: <Widget>[
-        //     IconButton(
-        //       icon: Icon(Icons.save_alt),
-        //       color: Colors.white,
-        //       onPressed: () => _showCurrentEpubCfi(context),
-        //     ),
-        //   ],
-        // ),
-        // drawer: Drawer(
-        //   child: EpubReaderTableOfContents(controller: _epubReaderController),
-        // ),
         body: SlidePanel(
           controller: _controller,
           title: "Примечание $index",
@@ -139,15 +115,10 @@ class _MyHomePageState extends State<MyHomePage> {
             setState(() {
               txt = text;
               index = refIndex;
-              print(txt);
-             // _panelController.show();
               _controller.showPanel();
             });
           },
           controller: _epubReaderController,
-          onDocumentLoaded: (document) {
-            print('isLoaded: $document');
-          },
           dividerBuilder: (_) => Divider(),
         ),
         ),

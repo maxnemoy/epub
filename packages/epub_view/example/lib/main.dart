@@ -127,9 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: EpubView(
           controller: _epubReaderController,
-          onDocumentLoaded: (document) {
-            print('isLoaded: $document');
-          },
           dividerBuilder: (_) => Divider(),
         ),
       );
