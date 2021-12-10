@@ -106,39 +106,89 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: SlidePanel(
-          controller: _controller,
-          title: "Примечание $index",
-          body: Text(txt),
-          child: EpubView(
-          onInternalLinkPressed: (refIndex, text){
-            setState(() {
-              txt = text;
-              index = refIndex;
-              _controller.showPanel();
-            });
-          },
-          controller: _epubReaderController,
-          dividerBuilder: (_) => Divider(),
-        ),
+        body: EpubView(
+        onInternalLinkPressed: (refIndex, text){
+          setState(() {
+            txt = text;
+            index = refIndex;
+            // _controller.showPanel();
+            showModalBottomSheet(
+              isScrollControlled: true,
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height*.95),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(20)
+                )
+              ),
+              context: context, 
+              builder: (context)=>SlideBody(
+                title: "Примечание $index",
+                body: Text(txt),
+              ),
+              );
+          });
+        },
+        controller: _epubReaderController,
+        dividerBuilder: (_) => Divider(),
         ),
       );
 
-  void _showCurrentEpubCfi(context) {
-    final cfi = _epubReaderController.generateEpubCfi();
+}
 
-    if (cfi != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(cfi),
-          action: SnackBarAction(
-            label: 'GO',
-            onPressed: () {
-              _epubReaderController.gotoEpubCfi(cfi);
-            },
-          ),
-        ),
-      );
-    }
+
+class SlideBody extends StatelessWidget {
+  final String title;
+  final Widget body;
+  final Color backgroundColor;
+  final Color accentColor;
+  final TextStyle titleTextStyle;
+
+  SlideBody({ Key? key, 
+  required this.title, 
+  required this.body, 
+  this.backgroundColor = Colors.white, 
+  this.accentColor = Colors.orange,
+  SlidePanelController? controller, 
+  TextStyle? titleTextStyle
+  }) :
+  titleTextStyle = titleTextStyle ?? TextStyle(fontSize: 18, fontStyle: FontStyle.italic, color: accentColor),
+    super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 15),
+                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(
+                                height: 5,
+                                width: 40,
+                                decoration: BoxDecoration(color: Colors.grey.withOpacity(0.1), borderRadius: const BorderRadius.all(Radius.circular(2))),
+                              )],),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 25, left: 25, bottom: 20),
+                              child: Text(title, style: titleTextStyle,),
+                            ),
+    
+                            Padding(
+                              padding: const EdgeInsets.only(left: 25),
+                              child: Container(color: accentColor, height: 2, width: double.infinity,),
+                            ),
+                            ConstrainedBox(                      
+                              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height*.8),
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 35, left: 25),
+                                child: SingleChildScrollView(child: IntrinsicHeight(child: Container(
+                                  width: double.infinity,
+                                  color: accentColor.withOpacity(0.05),
+                                  padding: const EdgeInsets.only(left: 20, right: 10, bottom: 20),
+                                  child: body))),
+                              )),
+                          ],
+                        ),
+    );
   }
 }
