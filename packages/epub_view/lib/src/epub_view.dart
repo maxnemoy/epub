@@ -222,14 +222,14 @@ class _EpubViewState extends State<EpubView> {
       return;
     } else {
       final List<Paragraph>? paragraph = _paragraphByIdRef(hrefIdRef);
-      if (paragraph != null) {
+      if (paragraph != null && paragraph.length > 0) {
+        // print(paragraph.length);
         if (widget.onInternalLinkPressed != null) {
           final List<String> words = ["", ""];
           paragraph.forEach((p) {
             final List<String> separated = p.element.text.trim().split(String.fromCharCode(9));
             if(separated.length > 1){
               words[0] += separated[0];
-              words[1] += separated[1];
             } else{
               words[1] += separated[0];
             }
