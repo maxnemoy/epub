@@ -230,6 +230,7 @@ class _EpubViewState extends State<EpubView> {
             final List<String> separated = p.element.text.trim().split(String.fromCharCode(9));
             if(separated.length > 1){
               words[0] += separated[0];
+              words[1] += "\n" + separated[1];
             } else{
               words[1] += separated[0];
             }
