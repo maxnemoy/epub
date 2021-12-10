@@ -223,7 +223,6 @@ class _EpubViewState extends State<EpubView> {
     } else {
       final List<Paragraph>? paragraph = _paragraphByIdRef(hrefIdRef);
       if (paragraph != null && paragraph.length > 0) {
-        // print(paragraph.length);
         if (widget.onInternalLinkPressed != null) {
           final List<String> words = ["", ""];
           paragraph.forEach((p) {
@@ -382,14 +381,14 @@ class _EpubViewState extends State<EpubView> {
           },
           customRender: {
             'img': (context, child) {
-              final url = context.tree.element!.attributes['src']!
-                  .replaceAll('../', '');
-              return Image(
-                image: MemoryImage(
-                  Uint8List.fromList(widget
-                      .controller._document!.Content!.Images![url]!.Content!),
-                ),
-              );
+              // final url = context.tree.element!.attributes['src']!
+              //     .replaceAll('../', '');
+              // return Image(
+              //   image: MemoryImage(
+              //     Uint8List.fromList(widget
+              //         .controller._document!.Content!.Images![url]!.Content!),
+              //   ),
+              // );
             }
           },
         ),
