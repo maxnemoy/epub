@@ -1,96 +1,133 @@
 import 'package:flutter/material.dart';
-import 'package:slide_panel/slide_panel/controller.dart';
+import 'package:slide_panel/slide_panel/controller_provider.dart';
 
-class SlidePanel extends StatelessWidget {
-  final String title;
-  final Widget body;
+Future<void> showResizableBottomSheet({
+  required BuildContext context,
+  required ResizableBottomSheet sheet,
+}) {
+  return showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (c) => sheet,
+  );
+}
+
+class ResizableBottomSheet extends StatefulWidget {
   final Widget child;
-  final Color backgroundColor;
-  final Color accentColor;
-  final TextStyle titleTextStyle;
-  final SlidePanelController controller;
-  SlidePanel({ Key? key, 
-  required this.title, 
-  required this.body, 
-  required this.child, 
-  this.backgroundColor = Colors.white, 
-  this.accentColor = Colors.orange,
-  SlidePanelController? controller, 
-  TextStyle? titleTextStyle
-  }) :
-  controller = controller ?? SlidePanelController(),
-  titleTextStyle = titleTextStyle ?? TextStyle(fontSize: 18, fontStyle: FontStyle.italic, color: accentColor),
-    super(key: key);
+  final double childMaxHeight;
+  final double childMinHeight;
+  final double bottomMagin;
+  final Color background;
+
+  const ResizableBottomSheet({
+    Key? key,
+    required this.child,
+    this.childMaxHeight = .9,
+    this.childMinHeight = .1,
+    this.bottomMagin = 10,
+    this.background = Colors.white,
+  }) : super(key: key);
+
+  @override
+  State<ResizableBottomSheet> createState() => _ResizableBottomSheetState();
+}
+
+class _ResizableBottomSheetState extends State<ResizableBottomSheet> {
+  double height = 0;
 
   @override
   Widget build(BuildContext context) {
-    return  SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child: StreamBuilder<bool>(
-          stream: controller.isShow,
-          initialData: false,
-          builder: (context, snapshot) => Stack(
-            children: [
-              child,
-              if(snapshot.data ?? false)
-              GestureDetector(onTap: (){
-                controller.hidePanel();
-              },  child: Container(width: double.infinity, height: double.infinity, color: Colors.grey.withOpacity(0.6),)),
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                bottom: snapshot.data ?? false ? 0 : -MediaQuery.of(context).size.height,
-                child: GestureDetector(
-                  onVerticalDragEnd: (detail){
-                    if(detail.primaryVelocity != null && detail.primaryVelocity! > 10){
-                        controller.hidePanel();
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: backgroundColor,
-                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-                      ),
-                    width: MediaQuery.of(context).size.width,                
-                    child: IntrinsicHeight(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Container(
-                              height: 5,
-                              width: 40,
-                              decoration: BoxDecoration(color: Colors.grey.withOpacity(0.2), borderRadius: const BorderRadius.all(Radius.circular(2))),
-                            )],),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 25, left: 40, bottom: 20),
-                            child: Text(title, style: titleTextStyle,),
-                          ),
-
-                          Padding(
-                            padding: const EdgeInsets.only(left: 40),
-                            child: Container(color: accentColor, height: 2, width: double.infinity,),
-                          ),
-                          ConstrainedBox(                      
-                            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height*.8),
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 60, right: 10, bottom: 35),
-                              child: SingleChildScrollView(child: Padding(
-                                padding: const EdgeInsets.only(right: 15),
-                                child: IntrinsicHeight(child: body),
-                              )),
-                            )),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+    if (height == 0) {
+      return _HeightCalculation(
+        onCalculateSize: (v) {
+          setState(() {
+            height = v!.height;
+          });
+        },
+        controller: ScrollController(),
+        child: widget.child,
       );
+    }
+
+    final double size = ((height + widget.bottomMagin) / MediaQuery.of(context).size.height).clamp(widget.childMinHeight, widget.childMaxHeight);
+
+    return DraggableScrollableSheet(
+      maxChildSize: size,
+      minChildSize:size - .1,
+      initialChildSize: size,
+      expand: false,
+      builder: (context, controller) {
+        return Material(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: widget.background,
+          child: _HeightCalculation(
+            onCalculateSize: (v) {
+              setState(() {
+                height = v!.height;
+              });
+            },
+            controller: controller,
+            child: widget.child,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _HeightCalculation extends StatefulWidget {
+  final Function(Size? size) onCalculateSize;
+  final ScrollController controller;
+  final Widget child;
+
+  const _HeightCalculation({
+    Key? key,
+    required this.controller,
+    required this.onCalculateSize,
+    required this.child,
+  }) : super(key: key);
+
+  @override
+  _HeightCalculationState createState() => _HeightCalculationState();
+}
+
+class _HeightCalculationState extends State<_HeightCalculation> {
+  final key = GlobalKey();
+
+  @override
+  initState() {
+    WidgetsBinding.instance?.addPostFrameCallback((_) => getHeight());
+
+    super.initState();
+  }
+
+  void getHeight() {
+    final size = key.currentContext?.size;
+    widget.onCalculateSize(size);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _ChildWrapper(
+      key: key,
+      controller: widget.controller,
+      child: widget.child,
+    );
+  }
+}
+
+class _ChildWrapper extends StatelessWidget {
+  final Widget child;
+  final ScrollController controller;
+  const _ChildWrapper({
+    Key? key,
+    required this.controller,
+    required this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ControllerProvider(controller: controller, child: child);
   }
 }
