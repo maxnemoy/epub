@@ -5,52 +5,62 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:slide_panel/slide_panel.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const App());
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
+class App extends StatelessWidget {
+  const App({ Key? key }) : super(key: key);
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
-  void initState() {
-    WidgetsBinding.instance?.addObserver(this);
-    super.initState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: BookList(),
+    );
   }
+}
+
+const List<String> books = [
+  "assets/1.epub",
+  "assets/2.epub",
+  "assets/3.epub",
+  "assets/5.epub",
+  "assets/12.epub",
+  ];
+
+class BookList extends StatelessWidget {
+  const BookList({ Key? key }) : super(key: key);
 
   @override
-  void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
-    super.dispose();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: ListView(
+        children: books.map((e) => ListTile(
+          title: Text(e),
+          onTap: (){
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=> ViewPage(bookPath: e,)));
+          },
+        )).toList(),
+      ),
+    );
   }
-
-  Brightness get platformBrightness =>
-      MediaQueryData.fromWindow(WidgetsBinding.instance!.window)
-          .platformBrightness;
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: MyHomePage(),
-      );
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key}) : super(key: key);
+
+class ViewPage extends StatefulWidget {
+  final String bookPath;
+  ViewPage({Key? key, required this.bookPath}) : super(key: key);
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _ViewPageState createState() => _ViewPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _ViewPageState extends State<ViewPage> {
   late EpubController _epubReaderController;
   String txt = "";
   int index = 0;
 
   @override
   void initState() {
-    final loadedBook = _loadFromAssets('assets/1.epub');
+    final loadedBook = _loadFromAssets(widget.bookPath);
     _epubReaderController = EpubController(
       document: EpubReader.readBook(loadedBook),
     );
