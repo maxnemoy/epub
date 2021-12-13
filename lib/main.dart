@@ -19,11 +19,11 @@ class App extends StatelessWidget {
 }
 
 const List<String> books = [
-  "assets/1.epub",
+  "assets/1.epub", //broken
   "assets/2.epub",
   "assets/3.epub",
   "assets/5.epub",
-  "assets/12.epub",
+  "assets/12.epub", //broken
   ];
 
 class BookList extends StatelessWidget {
@@ -46,8 +46,8 @@ class BookList extends StatelessWidget {
 
 
 class ViewPage extends StatefulWidget {
+  const ViewPage({Key? key, required this.bookPath}) : super(key: key);
   final String bookPath;
-  ViewPage({Key? key, required this.bookPath}) : super(key: key);
 
   @override
   _ViewPageState createState() => _ViewPageState();
@@ -55,8 +55,6 @@ class ViewPage extends StatefulWidget {
 
 class _ViewPageState extends State<ViewPage> {
   late EpubController _epubReaderController;
-  String txt = "";
-  int index = 0;
 
   @override
   void initState() {
@@ -82,28 +80,14 @@ class _ViewPageState extends State<ViewPage> {
   Widget build(BuildContext context) => Scaffold(
         body: EpubView(
           onInternalLinkPressed: (refIndex, text) {
-            setState(() {
-              txt = text;
-              index = refIndex;
               showResizableBottomSheet(
                   context: context,
                   sheet: ResizableBottomSheet(
                       child: SheetView(
-                          title: "Приложение $index", body: Text(txt))));
-              // showModalBottomSheet(
-              // context: context,
-              // isScrollControlled: true,
-              
-              // builder: (context) {
-              //   return FractionallySizedBox(
-              //     //heightFactor: 0.8,
-              //     child: SheetView( title: "Приложение $index", body: Text(txt)),
-              //   );
-              // });
-            });
+                          title: "Приложение $refIndex", body: Text(text))));
           },
           controller: _epubReaderController,
-          dividerBuilder: (_) => Divider(),
+          dividerBuilder: (_) => const Divider(),
         ),
       );
 }

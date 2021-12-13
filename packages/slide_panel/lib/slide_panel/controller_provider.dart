@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class ControllerProvider extends InheritedWidget {
   const ControllerProvider({
     Key? key,
-    required this.controller,
+    this.controller,
     required Widget child,
   }) : super(key: key, child: child);
 
-  final ScrollController controller;
+  final ScrollController? controller;
 
   static ControllerProvider of(BuildContext context) {
     final ControllerProvider? result = context.dependOnInheritedWidgetOfExactType<ControllerProvider>();

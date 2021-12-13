@@ -45,7 +45,6 @@ class _ResizableBottomSheetState extends State<ResizableBottomSheet> {
             height = v!.height;
           });
         },
-        controller: ScrollController(),
         child: widget.child,
       );
     }
@@ -77,16 +76,16 @@ class _ResizableBottomSheetState extends State<ResizableBottomSheet> {
 }
 
 class _HeightCalculation extends StatefulWidget {
-  final Function(Size? size) onCalculateSize;
-  final ScrollController controller;
-  final Widget child;
-
   const _HeightCalculation({
     Key? key,
-    required this.controller,
     required this.onCalculateSize,
     required this.child,
+    this.controller,
   }) : super(key: key);
+
+  final Function(Size? size) onCalculateSize;
+  final ScrollController? controller;
+  final Widget child;
 
   @override
   _HeightCalculationState createState() => _HeightCalculationState();
@@ -118,14 +117,15 @@ class _HeightCalculationState extends State<_HeightCalculation> {
 }
 
 class _ChildWrapper extends StatelessWidget {
-  final Widget child;
-  final ScrollController controller;
   const _ChildWrapper({
     Key? key,
-    required this.controller,
     required this.child,
+    this.controller,
   }) : super(key: key);
 
+  final Widget child;
+  final ScrollController? controller;
+  
   @override
   Widget build(BuildContext context) {
     return ControllerProvider(controller: controller, child: child);

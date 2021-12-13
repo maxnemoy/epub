@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:epubx/epubx.dart' hide Image;
@@ -237,6 +236,22 @@ class _EpubViewState extends State<EpubView> {
           widget.onInternalLinkPressed!(int.parse(words[0]), words[1]);
         }
       }else{
+        // TODO: if you need to follow internal links, you must return
+        // final paragraph = _paragraphByIdRef(hrefIdRef);
+        // final chapter =
+        //     paragraph != null ? _chapters[paragraph.chapterIndex] : null;
+
+        // if (chapter != null && paragraph != null) {
+        //   final paragraphIndex =
+        //       _epubCfiReader?._getParagraphIndexByElement(paragraph.element);
+        // final cfi = _epubCfiReader?.generateCfi(
+        //   book: widget.controller._document,
+        //   chapter: chapter,
+        //   paragraphIndex: paragraphIndex,
+        // );
+
+        //   _gotoEpubCfi(cfi);
+        // }
 
       }
 
@@ -381,7 +396,7 @@ class _EpubViewState extends State<EpubView> {
           },
           customRender: {
             'img': (context, child) {
-              //TODO: wtf?
+              // TODO: imaging breaks on some books
               // final url = context.tree.element!.attributes['src']!
               //     .replaceAll('../', '');
               // return Image(

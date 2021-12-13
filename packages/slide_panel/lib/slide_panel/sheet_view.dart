@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:slide_panel/slide_panel/controller_provider.dart';
 
 class SheetView extends StatelessWidget {
-  final String title;
-  final Widget body;
-  final Color backgroundColor;
-  final Color accentColor;
-  final TextStyle titleTextStyle;
   SheetView(
       {Key? key,
       required this.title,
@@ -19,11 +14,16 @@ class SheetView extends StatelessWidget {
                 fontSize: 18, fontStyle: FontStyle.italic, color: accentColor),
         super(key: key);
 
+  final String title;
+  final Widget body;
+  final Color backgroundColor;
+  final Color accentColor;
+  final TextStyle titleTextStyle;
+
   @override
   Widget build(BuildContext context) {
     return IntrinsicHeight(
       child: Column(
-       // mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
