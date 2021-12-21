@@ -225,17 +225,18 @@ class _EpubViewState extends State<EpubView> {
         if (widget.onInternalLinkPressed != null) {
           final List<String> words = ["", ""];
           paragraph.forEach((p) {
-            final List<String> separated = p.element.text.trim().split(String.fromCharCode(9));
-            if(separated.length > 1){
+            final List<String> separated =
+                p.element.text.trim().split(String.fromCharCode(9));
+            if (separated.length > 1) {
               words[0] += separated[0];
               words[1] += "\n" + separated[1];
-            } else{
+            } else {
               words[1] += separated[0];
             }
           });
           widget.onInternalLinkPressed!(int.parse(words[0]), words[1]);
         }
-      }else{
+      } else {
         // TODO: if you need to follow internal links, you must return
         // final paragraph = _paragraphByIdRef(hrefIdRef);
         // final chapter =
@@ -413,17 +414,18 @@ class _EpubViewState extends State<EpubView> {
   }
 
   Widget _buildLoaded() {
-    Widget _buildItem(BuildContext context, int index) =>
-        widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ??
-        _defaultItemBuilder(index);
+    ScrollController controller = ScrollController();
 
-    return ScrollablePositionedList.builder(
-      initialScrollIndex: _epubCfiReader!.paragraphIndexByCfiFragment ?? 0,
-      itemCount: _paragraphs.length,
-      itemScrollController: _itemScrollController,
-      itemPositionsListener: _itemPositionListener,
-      itemBuilder: _buildItem,
-    );
+    return CustomScrollView(
+      controller: controller,
+      slivers: [
+      SliverList(delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          return widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ?? _defaultItemBuilder(index);
+        },
+        childCount: _paragraphs.length
+      ))
+    ]);
   }
 
   @override
