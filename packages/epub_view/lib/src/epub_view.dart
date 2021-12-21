@@ -407,7 +407,9 @@ class _EpubViewState extends State<EpubView> {
             _getParagraphIndexBy(positionIndex: index) == 0)
           _buildDivider(_chapters[chapterIndex]),
         Html(
-          data: _paragraphs[index].element.outerHtml,
+          data: _paragraphs[index].element.outerHtml.replaceAllMapped(RegExp(r" ([1-9][0-9]{0,3}|10000)</a>"), (math){
+                          return' (Прим. ${math[0]?.substring(0, math[0]!.length-4)})</a>';
+                        }),
           onLinkTap: (href, _, __, ___) =>
               _onLinkPressed(href!, widget.onExternalLinkPressed),
           style: {

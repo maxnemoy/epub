@@ -88,7 +88,7 @@ class _ViewPageState extends State<ViewPage> {
                   context: context,
                   sheet: ResizableBottomSheet(
                       child: SheetView(
-                          title: "Приложение $refIndex", body: Text(text))));
+                          title: "Примечание $refIndex", body: Text(text))));
           },
           controller: _epubReaderController,
           dividerBuilder: (_) => const Divider(),
