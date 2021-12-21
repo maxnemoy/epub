@@ -79,6 +79,7 @@ class _ViewPageState extends State<ViewPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
         body: EpubView(
+          hideElements: const ["_idFootnote", "_idFootnotes"],
           onInternalLinkPressed: (refIndex, text) {
               showResizableBottomSheet(
                   context: context,

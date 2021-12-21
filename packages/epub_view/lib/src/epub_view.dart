@@ -54,6 +54,7 @@ class EpubView extends StatefulWidget {
     this.chapterPadding = const EdgeInsets.all(8),
     this.paragraphPadding = const EdgeInsets.symmetric(horizontal: 16),
     this.textStyle = _defaultTextStyle,
+    this.hideElements,
     Key? key,
   }) : super(key: key);
 
@@ -77,6 +78,7 @@ class EpubView extends StatefulWidget {
   final EdgeInsetsGeometry paragraphPadding;
   final ChaptersBuilder? itemBuilder;
   final TextStyle textStyle;
+  final List<String>? hideElements;
 
   @override
   _EpubViewState createState() => _EpubViewState();
@@ -375,8 +377,21 @@ class _EpubViewState extends State<EpubView> {
         ),
       );
 
+  bool isHidden(element){
+    bool hidden = false;
+    widget.hideElements?.forEach((e) {
+      hidden = element.className == e || element.parent?.parent?.className == e || element.parent?.className == e;
+    });
+    return hidden;
+  }
+
   Widget _defaultItemBuilder(int index) {
     if (_paragraphs.isEmpty) {
+      return Container();
+    }
+
+   // RegExp rex = RegExp("<p class=\"Примечания\"(.+?)>(.+?)<\/p>");
+    if (isHidden(_paragraphs[index].element)){
       return Container();
     }
 
