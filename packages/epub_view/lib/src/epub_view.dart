@@ -37,6 +37,7 @@ typedef ChaptersBuilder = Widget Function(
 
 typedef ExternalLinkPressed = void Function(String href);
 typedef InternalLinkPressed = void Function(int index, String text);
+typedef OnInternalLinkLoad = void Function(bool isLoad);
 
 class EpubView extends StatefulWidget {
   const EpubView({
@@ -44,6 +45,7 @@ class EpubView extends StatefulWidget {
     this.itemBuilder,
     this.onExternalLinkPressed,
     this.onInternalLinkPressed,
+    this.onInternalLinkLoad,
     this.loaderSwitchDuration,
     this.loader,
     this.errorBuilder,
@@ -61,6 +63,7 @@ class EpubView extends StatefulWidget {
   final EpubController controller;
   final ExternalLinkPressed? onExternalLinkPressed;
   final InternalLinkPressed? onInternalLinkPressed;
+  final OnInternalLinkLoad? onInternalLinkLoad;
 
   /// Show document loading error message inside [EpubView]
   final Widget Function(Exception? error)? errorBuilder;
@@ -225,6 +228,7 @@ class _EpubViewState extends State<EpubView> {
       final List<Paragraph>? paragraph = _paragraphByIdRef(hrefIdRef);
       if (paragraph != null && paragraph.length > 0) {
         if (widget.onInternalLinkPressed != null) {
+          if(widget.onInternalLinkLoad != null){widget.onInternalLinkLoad!(true);}
           final List<String> words = ["", ""];
           paragraph.forEach((p) {
             final List<String> separated =
@@ -237,6 +241,7 @@ class _EpubViewState extends State<EpubView> {
             }
           });
           widget.onInternalLinkPressed!(int.parse(words[0]), words[1]);
+          if(widget.onInternalLinkLoad != null){widget.onInternalLinkLoad!(false);}
         }
       } else {
         // TODO: if you need to follow internal links, you must return
