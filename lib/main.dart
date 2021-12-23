@@ -19,15 +19,34 @@ class App extends StatelessWidget {
 }
 
 const List<String> books = [
-  "assets/1.epub", //broken
-  "assets/2.epub",
-  "assets/3.epub",
-  "assets/5.epub",
-  "assets/12.epub", //broken
+  "assets/2.epub", //full
+  "assets/23.epub", // 23 Temmuz
+  "assets/24.epub", // 24 Temmuz
+  "assets/notes.epub", // notes
   ];
 
-class BookList extends StatelessWidget {
+class BookList extends StatefulWidget {
   const BookList({ Key? key }) : super(key: key);
+
+  @override
+  State<BookList> createState() => _BookListState();
+}
+
+class _BookListState extends State<BookList> {
+late EpubController _epubNotes;
+@override
+void initState() {
+    final notesBook =  _loadFromAssets("assets/notes.epub");
+    _epubNotes = EpubController(
+    document: EpubReader.readBook(notesBook),
+  );
+  super.initState();
+}
+
+  Future<Uint8List> _loadFromAssets(String assetName) async {
+    final bytes = await rootBundle.load(assetName);
+    return bytes.buffer.asUint8List();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +55,7 @@ class BookList extends StatelessWidget {
         children: books.map((e) => ListTile(
           title: Text(e),
           onTap: (){
-            Navigator.of(context).push(MaterialPageRoute(builder: (context)=> ViewPage(bookPath: e,)));
+            Navigator.of(context).push(MaterialPageRoute(builder: (context)=> ViewPage(bookPath: e, epubNotes: _epubNotes,)));
           },
         )).toList(),
       ),
@@ -46,8 +65,9 @@ class BookList extends StatelessWidget {
 
 
 class ViewPage extends StatefulWidget {
-  const ViewPage({Key? key, required this.bookPath}) : super(key: key);
+  const ViewPage({Key? key, required this.bookPath, required this.epubNotes}) : super(key: key);
   final String bookPath;
+  final EpubController epubNotes;
 
   @override
   _ViewPageState createState() => _ViewPageState();
@@ -55,6 +75,8 @@ class ViewPage extends StatefulWidget {
 
 class _ViewPageState extends State<ViewPage> {
   late EpubController _epubReaderController;
+  late String title;
+  
 
   @override
   void initState() {
@@ -62,8 +84,10 @@ class _ViewPageState extends State<ViewPage> {
     _epubReaderController = EpubController(
       document: EpubReader.readBook(loadedBook),
     );
+    
     super.initState();
   }
+
 
   @override
   void dispose() {
@@ -78,10 +102,15 @@ class _ViewPageState extends State<ViewPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      actions: [IconButton(onPressed: (){}, icon: const Icon(Icons.calendar_today))],
+      title: Column(children: [
+      const Text("Мишне Тора. Книга любовь.", style: TextStyle(fontSize: 16),),
+      Text("23 тамуз 5181 - 3 июль 2021", style: Theme.of(context).textTheme.caption,)
+    ]), centerTitle: true),
         body: EpubView(
           hideElements: const ["_idFootnote", "_idFootnotes"],
           onInternalLinkLoad: (isLoad){
-            print("SHEET LOADED: $isLoad");
           },
           onInternalLinkPressed: (refIndex, text) {
               showResizableBottomSheet(
@@ -91,6 +120,7 @@ class _ViewPageState extends State<ViewPage> {
                           title: "Примечание $refIndex", body: Text(text))));
           },
           controller: _epubReaderController,
+          notesController: widget.epubNotes,
           dividerBuilder: (_) => const Divider(),
         ),
       );

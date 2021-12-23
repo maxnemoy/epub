@@ -42,6 +42,7 @@ typedef OnInternalLinkLoad = void Function(bool isLoad);
 class EpubView extends StatefulWidget {
   const EpubView({
     required this.controller,
+    required this.notesController,
     this.itemBuilder,
     this.onExternalLinkPressed,
     this.onInternalLinkPressed,
@@ -61,6 +62,7 @@ class EpubView extends StatefulWidget {
   }) : super(key: key);
 
   final EpubController controller;
+  final EpubController notesController;
   final ExternalLinkPressed? onExternalLinkPressed;
   final InternalLinkPressed? onInternalLinkPressed;
   final OnInternalLinkLoad? onInternalLinkLoad;
@@ -94,6 +96,8 @@ class _EpubViewState extends State<EpubView> {
   ItemPositionsListener? _itemPositionListener;
   List<EpubChapter> _chapters = [];
   List<Paragraph> _paragraphs = [];
+  List<EpubChapter> _noteChapters = [];
+  List<Paragraph> _noteParagraphs = [];
   EpubCfiReader? _epubCfiReader;
   EpubChapterViewValue? _currentValue;
   bool _initialized = false;
@@ -108,6 +112,7 @@ class _EpubViewState extends State<EpubView> {
     _itemScrollController = ItemScrollController();
     _itemPositionListener = ItemPositionsListener.create();
     widget.controller._attach(this);
+    widget.notesController._attach(this);
     super.initState();
   }
 
@@ -117,6 +122,7 @@ class _EpubViewState extends State<EpubView> {
     _actualChapter.close();
     _bookLoaded.close();
     widget.controller._detach();
+    widget.notesController._detach();
     super.dispose();
   }
 
@@ -130,6 +136,11 @@ class _EpubViewState extends State<EpubView> {
     _paragraphs = parseParagraphsResult.flatParagraphs;
     _chapterIndexes.addAll(parseParagraphsResult.chapterIndexes);
 
+    
+    _noteChapters = parseChapters(widget.notesController._document!);;
+    final parseNoteParagraphsResult = parseParagraphs(_noteChapters, widget.notesController._document!.Content);
+    _noteParagraphs = parseNoteParagraphsResult.flatParagraphs;
+  
     _epubCfiReader = EpubCfiReader.parser(
       cfiInput: widget.controller.epubCfi,
       chapters: _chapters,
@@ -225,7 +236,7 @@ class _EpubViewState extends State<EpubView> {
 
       return;
     } else {
-      final List<Paragraph>? paragraph = _paragraphByIdRef(hrefIdRef);
+      final List<Paragraph>? paragraph = _noteParagraphByIdRef(hrefIdRef);
       if (paragraph != null && paragraph.length > 0) {
         if (widget.onInternalLinkPressed != null) {
           if(widget.onInternalLinkLoad != null){widget.onInternalLinkLoad!(true);}
@@ -273,6 +284,21 @@ class _EpubViewState extends State<EpubView> {
         return true;
       }
 
+      if (paragraph.element.id == idRef) {
+        return true;
+      }
+
+      return paragraph.element.children.isNotEmpty &&
+          paragraph.element.children[0].id == idRef;
+    }).toList();
+  }
+
+  List<Paragraph>? _noteParagraphByIdRef(String idRef) {
+    return _noteParagraphs.where((paragraph) {
+      if (paragraph.element.parent?.id == idRef) {
+        return true;
+      }
+ 
       if (paragraph.element.id == idRef) {
         return true;
       }
@@ -404,7 +430,7 @@ class _EpubViewState extends State<EpubView> {
     return Column(
       children: <Widget>[
         if (chapterIndex >= 0 &&
-            _getParagraphIndexBy(positionIndex: index) == 0)
+          _getParagraphIndexBy(positionIndex: index) == 0)
           _buildDivider(_chapters[chapterIndex]),
         Html(
           data: _paragraphs[index].element.outerHtml.replaceAllMapped(RegExp(r" ([1-9][0-9]{0,3}|10000)</a>"), (math){
