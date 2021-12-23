@@ -466,50 +466,55 @@ class _EpubViewState extends State<EpubView> {
             widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ??
             _defaultItemBuilder(index);
 
-    return ScrollablePositionedList.builder(
-      initialScrollIndex: _epubCfiReader!.paragraphIndexByCfiFragment ?? 0,
-      itemCount: _paragraphs.length,
-      itemScrollController: _itemScrollController,
-      itemPositionsListener: _itemPositionListener,
-      itemBuilder: _buildItem,
+    return SliverList(
+      
+      delegate: SliverChildListDelegate( List.generate(_paragraphs.length, (index) => _buildItem(context, index))),
     );
+    // return ScrollablePositionedList.builder(
+    //   initialScrollIndex: _epubCfiReader!.paragraphIndexByCfiFragment ?? 0,
+    //   itemCount: _paragraphs.length,
+    //   itemScrollController: _itemScrollController,
+    //   itemPositionsListener: _itemPositionListener,
+    //   itemBuilder: _buildItem,
+    // );
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget? content;
+    // Widget? content;
 
-    switch (_loadingState) {
-      case _EpubViewLoadingState.loading:
-        content = KeyedSubtree(
-          key: Key('$runtimeType.root.loading'),
-          child: widget.loader ?? SizedBox(),
-        );
-        break;
-      case _EpubViewLoadingState.error:
-        content = KeyedSubtree(
-          key: Key('$runtimeType.root.error'),
-          child: Padding(
-            padding: EdgeInsets.all(32),
-            child: widget.errorBuilder?.call(_loadingError) ??
-                Center(child: Text(_loadingError.toString())),
-          ),
-        );
-        break;
-      case _EpubViewLoadingState.success:
-        content = KeyedSubtree(
-          key: Key('$runtimeType.root.success'),
-          child: _buildLoaded(),
-        );
-        break;
-    }
+    // switch (_loadingState) {
+    //   case _EpubViewLoadingState.loading:
+    //     content = KeyedSubtree(
+    //       key: Key('$runtimeType.root.loading'),
+    //       child: widget.loader ?? SizedBox(),
+    //     );
+    //     break;
+    //   case _EpubViewLoadingState.error:
+    //     content = KeyedSubtree(
+    //       key: Key('$runtimeType.root.error'),
+    //       child: Padding(
+    //         padding: EdgeInsets.all(32),
+    //         child: widget.errorBuilder?.call(_loadingError) ??
+    //             Center(child: Text(_loadingError.toString())),
+    //       ),
+    //     );
+    //     break;
+    //   case _EpubViewLoadingState.success:
+    //     content = KeyedSubtree(
+    //       key: Key('$runtimeType.root.success'),
+    //       child: _buildLoaded(),
+    //     );
+    //     break;
+    // }
 
-    return AnimatedSwitcher(
-      duration: widget.loaderSwitchDuration ?? Duration(milliseconds: 500),
-      transitionBuilder: (child, animation) =>
-          FadeTransition(opacity: animation, child: child),
-      child: content,
-    );
+    return _buildLoaded();
+    // return AnimatedSwitcher(
+    //   duration: widget.loaderSwitchDuration ?? Duration(milliseconds: 500),
+    //   transitionBuilder: (child, animation) =>
+    //       FadeTransition(opacity: animation, child: child),
+    //   child: content,
+    // );
   }
 }
 
