@@ -462,18 +462,17 @@ class _EpubViewState extends State<EpubView> {
   }
 
   Widget _buildLoaded() {
-    ScrollController controller = ScrollController();
+    Widget _buildItem(BuildContext context, int index) =>
+            widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ??
+            _defaultItemBuilder(index);
 
-    return CustomScrollView(
-      controller: controller,
-      slivers: [
-      SliverList(delegate: SliverChildBuilderDelegate(
-        (BuildContext context, int index) {
-          return widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ?? _defaultItemBuilder(index);
-        },
-        childCount: _paragraphs.length
-      ))
-    ]);
+    return ScrollablePositionedList.builder(
+      initialScrollIndex: _epubCfiReader!.paragraphIndexByCfiFragment ?? 0,
+      itemCount: _paragraphs.length,
+      itemScrollController: _itemScrollController,
+      itemPositionsListener: _itemPositionListener,
+      itemBuilder: _buildItem,
+    );
   }
 
   @override
