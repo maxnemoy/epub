@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:epubx/epubx.dart' hide Image;
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
@@ -135,7 +134,6 @@ class _EpubViewState extends State<EpubView> {
     super.dispose();
   }
 
-
   Future<bool> _init() async {
     if (_initialized) {
       return true;
@@ -145,11 +143,13 @@ class _EpubViewState extends State<EpubView> {
     _paragraphs = parseParagraphsResult.flatParagraphs;
     _chapterIndexes.addAll(parseParagraphsResult.chapterIndexes);
 
-    
-    _noteChapters = await compute(parseChapters, widget.notesController._document!);;
-    final parseNoteParagraphsResult =  await compute(parseParagraphs, _noteChapters);
+    _noteChapters =
+        await compute(parseChapters, widget.notesController._document!);
+    ;
+    final parseNoteParagraphsResult =
+        await compute(parseParagraphs, _noteChapters);
     _noteParagraphs = parseNoteParagraphsResult.flatParagraphs;
-  
+
     _epubCfiReader = EpubCfiReader.parser(
       cfiInput: widget.controller.epubCfi,
       chapters: _chapters,
@@ -248,7 +248,9 @@ class _EpubViewState extends State<EpubView> {
       final List<Paragraph>? paragraph = _noteParagraphByIdRef(hrefIdRef);
       if (paragraph != null && paragraph.length > 0) {
         if (widget.onInternalLinkPressed != null) {
-          if(widget.onInternalLinkLoad != null){widget.onInternalLinkLoad!(true);}
+          if (widget.onInternalLinkLoad != null) {
+            widget.onInternalLinkLoad!(true);
+          }
           final List<String> words = ["", ""];
           paragraph.forEach((p) {
             final List<String> separated =
@@ -261,7 +263,9 @@ class _EpubViewState extends State<EpubView> {
             }
           });
           widget.onInternalLinkPressed!(int.parse(words[0]), words[1]);
-          if(widget.onInternalLinkLoad != null){widget.onInternalLinkLoad!(false);}
+          if (widget.onInternalLinkLoad != null) {
+            widget.onInternalLinkLoad!(false);
+          }
         }
       } else {
         // TODO: if you need to follow internal links, you must return
@@ -307,7 +311,7 @@ class _EpubViewState extends State<EpubView> {
       if (paragraph.element.parent?.id == idRef) {
         return true;
       }
- 
+
       if (paragraph.element.id == idRef) {
         return true;
       }
@@ -417,10 +421,12 @@ class _EpubViewState extends State<EpubView> {
         ),
       );
 
-  bool isHidden(element){
+  bool isHidden(element) {
     bool hidden = false;
     widget.hideElements?.forEach((e) {
-      hidden = element.className == e || element.parent?.parent?.className == e || element.parent?.className == e;
+      hidden = element.className == e ||
+          element.parent?.parent?.className == e ||
+          element.parent?.className == e;
     });
     return hidden;
   }
@@ -430,20 +436,17 @@ class _EpubViewState extends State<EpubView> {
       return Container();
     }
 
-   // RegExp rex = RegExp("<p class=\"Примечания\"(.+?)>(.+?)<\/p>");
-    if (isHidden(_paragraphs[index].element)){
+    if (isHidden(_paragraphs[index].element)) {
       return Container();
     }
 
-    final chapterIndex = _getChapterIndexBy(positionIndex: index);
     return Column(
       children: <Widget>[
-        // if (chapterIndex >= 0 && _getParagraphIndexBy(positionIndex: index) == 0)
-        //   _buildDivider(_chapters[chapterIndex]),
         Html(
-          data: _paragraphs[index].element.outerHtml.replaceAllMapped(RegExp(r" ([1-9][0-9]{0,3}|10000)</a>"), (math){
-                          return' (Прим. ${math[0]?.substring(0, math[0]!.length-4)})</a>';
-                        }),
+          data: _paragraphs[index].element.outerHtml.replaceAllMapped(
+              RegExp(r" ([1-9][0-9]{0,3}|10000)</a>"), (math) {
+            return ' (Прим. ${math[0]?.substring(0, math[0]!.length - 4)})</a>';
+          }),
           onLinkTap: (href, _, __, ___) =>
               _onLinkPressed(href!, widget.onExternalLinkPressed),
           style: {
@@ -469,66 +472,33 @@ class _EpubViewState extends State<EpubView> {
     );
   }
 
-  Widget _buildLoaded(Widget? header, Widget? footer, Widget? progressIndicator) {
+  Widget _buildLoaded(
+      Widget? header, Widget? footer, Widget? progressIndicator) {
     Widget _buildItem(BuildContext context, int index) =>
-            widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ??
-            _defaultItemBuilder(index);
+        widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ??
+        _defaultItemBuilder(index);
 
-    if(_paragraphs.length == 0) return  progressIndicator ?? Center(child: CircularProgressIndicator(),);
+    if (_paragraphs.length == 0)
+      return progressIndicator ??
+          Center(
+            child: CircularProgressIndicator(),
+          );
 
     return CustomScrollView(
-        shrinkWrap: true,
-        slivers: [
-          SliverToBoxAdapter(child: header ?? Container()),
-          SliverList(delegate: SliverChildListDelegate(List.generate(_paragraphs.length, (index) => _buildItem(context, index)))),
-          SliverToBoxAdapter(child: footer ?? Container())
-        ],
-      );
-    // return ScrollablePositionedList.builder(
-    //   initialScrollIndex: _epubCfiReader!.paragraphIndexByCfiFragment ?? 0,
-    //   itemCount: _paragraphs.length,
-    //   itemScrollController: _itemScrollController,
-    //   itemPositionsListener: _itemPositionListener,
-    //   itemBuilder: _buildItem,
-    // );
+      shrinkWrap: true,
+      slivers: [
+        SliverToBoxAdapter(child: header ?? Container()),
+        SliverList(
+            delegate: SliverChildListDelegate(List.generate(
+                _paragraphs.length, (index) => _buildItem(context, index)))),
+        SliverToBoxAdapter(child: footer ?? Container())
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Widget? content;
-
-    // switch (_loadingState) {
-    //   case _EpubViewLoadingState.loading:
-    //     content = KeyedSubtree(
-    //       key: Key('$runtimeType.root.loading'),
-    //       child: widget.loader ?? SizedBox(),
-    //     );
-    //     break;
-    //   case _EpubViewLoadingState.error:
-    //     content = KeyedSubtree(
-    //       key: Key('$runtimeType.root.error'),
-    //       child: Padding(
-    //         padding: EdgeInsets.all(32),
-    //         child: widget.errorBuilder?.call(_loadingError) ??
-    //             Center(child: Text(_loadingError.toString())),
-    //       ),
-    //     );
-    //     break;
-    //   case _EpubViewLoadingState.success:
-    //     content = KeyedSubtree(
-    //       key: Key('$runtimeType.root.success'),
-    //       child: _buildLoaded(),
-    //     );
-    //     break;
-    // }
-
     return _buildLoaded(widget.header, widget.footer, widget.progressIndicator);
-    // return AnimatedSwitcher(
-    //   duration: widget.loaderSwitchDuration ?? Duration(milliseconds: 500),
-    //   transitionBuilder: (child, animation) =>
-    //       FadeTransition(opacity: animation, child: child),
-    //   child: content,
-    // );
   }
 }
 

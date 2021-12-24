@@ -88,22 +88,19 @@ class _ViewPageState extends State<ViewPage> {
 
   @override
   void initState() {
-    
-
     super.initState();
-    
-    WidgetsBinding.instance!.addPostFrameCallback((_){
-            _load();
-          });
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      _load();
+    });
   }
 
-  _load()async{
+  _load() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    
+
     final loadedBook = _loadFromAssets(widget.bookPath);
-        _epubReaderController = EpubController(
-          document: EpubReader.readBook(loadedBook),
-        );
+    _epubReaderController = EpubController(
+      document: EpubReader.readBook(loadedBook),
+    );
     setState(() {
       isLoad = false;
     });
@@ -122,91 +119,123 @@ class _ViewPageState extends State<ViewPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-      appBar: AppBar(
-          actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.calendar_today))
-          ],
-          title: Column(children: [
-            const Text(
-              "Мишне Тора. Книга любовь.",
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              "23 тамуз 5181 - 3 июль 2021",
-              style: Theme.of(context).textTheme.caption,
-            )
-          ]),
-          centerTitle: true),
-      body: isLoad ? Container() : EpubView(
-            hideElements: const ["_idFootnote", "_idFootnotes"],
-            onInternalLinkLoad: (isLoad) {print(isLoad);},
-            onInternalLinkPressed: (refIndex, text) {
-              showResizableBottomSheet(
-                  context: context,
-                  sheet: ResizableBottomSheet(
-                      child: SheetView(
-                          title: "Примечание $refIndex", body: Text(text))));
-            },
-            controller: _epubReaderController,
-            notesController: widget.epubNotes,
-            dividerBuilder: (_) => Container(),
-            header: Center(
-                child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 200),
-                  child: Text("Предисловие к \"Мишне тора\"",
-                      style: Theme.of(context).textTheme.headline5,
-                      textAlign: TextAlign.center)),
-            )),
-            footer: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Center(
-                    child: hasReaded ? 
-                    ElevatedButton.icon(
-                            style: ButtonStyle(
-                                backgroundColor:
-                                    MaterialStateProperty.all<Color>(
-                                        Colors.green),
-                                padding: MaterialStateProperty.all<
-                                        EdgeInsetsGeometry>(
-                                    const EdgeInsets.symmetric(
-                                        vertical: 15, horizontal: 20)),
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ))),
-                            onPressed: () {
-                             setState(() {
-                               hasReaded = false;
-                             });
-                            },
-                            label: const Text("Завершено"),
-                            icon: const Icon(
-                              Icons.check,
-                              size: 16,
-                            ),
-                          )
-                        : ElevatedButton(
-                            style: ButtonStyle(
-                                padding: MaterialStateProperty.all<
-                                        EdgeInsetsGeometry>(
-                                    const EdgeInsets.symmetric(
-                                        vertical: 15, horizontal: 20)),
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ))),
-                            onPressed: () {
-                              setState(() {
-                                hasReaded = true;
-                              });
-                            },
-                            child: const Text("Завершить главу"),
-                          ),
-                  )),
-                  progressIndicator: const Center(child: CupertinoActivityIndicator(),),
-          ),);
+        appBar: AppBar(
+            actions: [
+              IconButton(
+                  onPressed: () {}, icon: const Icon(Icons.calendar_today))
+            ],
+            title: Column(children: [
+              const Text(
+                "Мишне Тора. Книга любовь.",
+                style: TextStyle(fontSize: 16),
+              ),
+              Text(
+                "23 тамуз 5181 - 3 июль 2021",
+                style: Theme.of(context).textTheme.caption,
+              )
+            ]),
+            centerTitle: true),
+        body: isLoad
+            ? Container()
+            : EpubView(
+                hideElements: const ["_idFootnote", "_idFootnotes"],
+                onInternalLinkLoad: (isLoad) {
+                  print(isLoad);
+                },
+                onInternalLinkPressed: (refIndex, text) {
+                  showResizableBottomSheet(
+                      context: context,
+                      sheet: ResizableBottomSheet(
+                          child: SheetView(
+                              title: "Примечание $refIndex",
+                              body: Text(text))));
+                },
+                controller: _epubReaderController,
+                notesController: widget.epubNotes,
+                dividerBuilder: (_) => Container(),
+                header: const _BookHeader(),
+                footer: const _BookFooter(),
+                progressIndicator: const Center(
+                  child: CupertinoActivityIndicator(),
+                ),
+              ),
+      );
+}
+
+class _BookFooter extends StatefulWidget {
+  const _BookFooter({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<_BookFooter> createState() => _BookFooterState();
+}
+
+class _BookFooterState extends State<_BookFooter> {
+  bool isReaded = false;
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Center(
+          child: isReaded
+              ? ElevatedButton.icon(
+                  style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Colors.green),
+                      padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                          const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20)),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ))),
+                  onPressed: () {
+                    setState(() {
+                      isReaded = false;
+                    });
+                  },
+                  label: const Text("Завершено"),
+                  icon: const Icon(
+                    Icons.check,
+                    size: 16,
+                  ),
+                )
+              : ElevatedButton(
+                  style: ButtonStyle(
+                      padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+                          const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 20)),
+                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                          RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30.0),
+                      ))),
+                  onPressed: () {
+                    setState(() {
+                      isReaded = true;
+                    });
+                  },
+                  child: const Text("Завершить главу"),
+                ),
+        ));
+  }
+}
+
+class _BookHeader extends StatelessWidget {
+  const _BookHeader({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+        child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 200),
+          child: Text("Предисловие к \"Мишне тора\"",
+              style: Theme.of(context).textTheme.headline5,
+              textAlign: TextAlign.center)),
+    ));
+  }
 }
