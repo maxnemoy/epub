@@ -28,8 +28,7 @@ List<dom.Element> _removeAllDiv(List<dom.Element> elements) {
 }
 
 ParseParagraphsResult parseParagraphs(
-  List<EpubChapter> chapters,
-  EpubContent? content,
+  List<EpubChapter> chapters
 ) {
   String? filename = '';
   final List<int> chapterIndexes = [];

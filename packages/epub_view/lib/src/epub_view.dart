@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:epubx/epubx.dart' hide Image;
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:html/dom.dart' as dom;
@@ -58,8 +60,15 @@ class EpubView extends StatefulWidget {
     this.paragraphPadding = const EdgeInsets.symmetric(horizontal: 16),
     this.textStyle = _defaultTextStyle,
     this.hideElements,
+    this.header,
+    this.footer,
+    this.progressIndicator,
     Key? key,
   }) : super(key: key);
+
+  final Widget? header;
+  final Widget? footer;
+  final Widget? progressIndicator;
 
   final EpubController controller;
   final EpubController notesController;
@@ -126,19 +135,19 @@ class _EpubViewState extends State<EpubView> {
     super.dispose();
   }
 
+
   Future<bool> _init() async {
     if (_initialized) {
       return true;
     }
-    _chapters = parseChapters(widget.controller._document!);
-    final parseParagraphsResult =
-        parseParagraphs(_chapters, widget.controller._document!.Content);
+    _chapters = await compute(parseChapters, widget.controller._document!);
+    final parseParagraphsResult = await compute(parseParagraphs, _chapters);
     _paragraphs = parseParagraphsResult.flatParagraphs;
     _chapterIndexes.addAll(parseParagraphsResult.chapterIndexes);
 
     
-    _noteChapters = parseChapters(widget.notesController._document!);;
-    final parseNoteParagraphsResult = parseParagraphs(_noteChapters, widget.notesController._document!.Content);
+    _noteChapters = await compute(parseChapters, widget.notesController._document!);;
+    final parseNoteParagraphsResult =  await compute(parseParagraphs, _noteChapters);
     _noteParagraphs = parseNoteParagraphsResult.flatParagraphs;
   
     _epubCfiReader = EpubCfiReader.parser(
@@ -429,9 +438,8 @@ class _EpubViewState extends State<EpubView> {
     final chapterIndex = _getChapterIndexBy(positionIndex: index);
     return Column(
       children: <Widget>[
-        if (chapterIndex >= 0 &&
-          _getParagraphIndexBy(positionIndex: index) == 0)
-          _buildDivider(_chapters[chapterIndex]),
+        // if (chapterIndex >= 0 && _getParagraphIndexBy(positionIndex: index) == 0)
+        //   _buildDivider(_chapters[chapterIndex]),
         Html(
           data: _paragraphs[index].element.outerHtml.replaceAllMapped(RegExp(r" ([1-9][0-9]{0,3}|10000)</a>"), (math){
                           return' (Прим. ${math[0]?.substring(0, math[0]!.length-4)})</a>';
@@ -461,15 +469,21 @@ class _EpubViewState extends State<EpubView> {
     );
   }
 
-  Widget _buildLoaded() {
+  Widget _buildLoaded(Widget? header, Widget? footer, Widget? progressIndicator) {
     Widget _buildItem(BuildContext context, int index) =>
             widget.itemBuilder?.call(context, _chapters, _paragraphs, index) ??
             _defaultItemBuilder(index);
 
-    return SliverList(
-      
-      delegate: SliverChildListDelegate( List.generate(_paragraphs.length, (index) => _buildItem(context, index))),
-    );
+    if(_paragraphs.length == 0) return  progressIndicator ?? Center(child: CircularProgressIndicator(),);
+
+    return CustomScrollView(
+        shrinkWrap: true,
+        slivers: [
+          SliverToBoxAdapter(child: header ?? Container()),
+          SliverList(delegate: SliverChildListDelegate(List.generate(_paragraphs.length, (index) => _buildItem(context, index)))),
+          SliverToBoxAdapter(child: footer ?? Container())
+        ],
+      );
     // return ScrollablePositionedList.builder(
     //   initialScrollIndex: _epubCfiReader!.paragraphIndexByCfiFragment ?? 0,
     //   itemCount: _paragraphs.length,
@@ -508,7 +522,7 @@ class _EpubViewState extends State<EpubView> {
     //     break;
     // }
 
-    return _buildLoaded();
+    return _buildLoaded(widget.header, widget.footer, widget.progressIndicator);
     // return AnimatedSwitcher(
     //   duration: widget.loaderSwitchDuration ?? Duration(milliseconds: 500),
     //   transitionBuilder: (child, animation) =>

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:epub_view/epub_view.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:slide_panel/slide_panel.dart';
@@ -83,15 +84,29 @@ class _ViewPageState extends State<ViewPage> {
   late EpubController _epubReaderController;
   late String title;
   bool hasReaded = false;
+  bool isLoad = true;
 
   @override
   void initState() {
-    final loadedBook = _loadFromAssets(widget.bookPath);
-    _epubReaderController = EpubController(
-      document: EpubReader.readBook(loadedBook),
-    );
+    
 
     super.initState();
+    
+    WidgetsBinding.instance!.addPostFrameCallback((_){
+            _load();
+          });
+  }
+
+  _load()async{
+    await Future.delayed(const Duration(milliseconds: 300));
+    
+    final loadedBook = _loadFromAssets(widget.bookPath);
+        _epubReaderController = EpubController(
+          document: EpubReader.readBook(loadedBook),
+        );
+    setState(() {
+      isLoad = false;
+    });
   }
 
   @override
@@ -122,24 +137,9 @@ class _ViewPageState extends State<ViewPage> {
             )
           ]),
           centerTitle: true),
-      body: CustomScrollView(
-        shrinkWrap: true,
-        slivers: [
-          SliverToBoxAdapter(
-            child: Center(
-                child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 200),
-                  child: Text("Предисловие к \"Мишне тора\"",
-                      style: Theme.of(context).textTheme.headline5,
-                      textAlign: TextAlign.center)),
-            )),
-          ),
-          EpubView(
+      body: isLoad ? Container() : EpubView(
             hideElements: const ["_idFootnote", "_idFootnotes"],
-            onInternalLinkLoad: (isLoad) {},
-            onDocumentLoaded: (_){print("loaded");},
+            onInternalLinkLoad: (isLoad) {print(isLoad);},
             onInternalLinkPressed: (refIndex, text) {
               showResizableBottomSheet(
                   context: context,
@@ -150,13 +150,20 @@ class _ViewPageState extends State<ViewPage> {
             controller: _epubReaderController,
             notesController: widget.epubNotes,
             dividerBuilder: (_) => Container(),
-          ),
-          SliverToBoxAdapter(
-              child: Padding(
+            header: Center(
+                child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 200),
+                  child: Text("Предисловие к \"Мишне тора\"",
+                      style: Theme.of(context).textTheme.headline5,
+                      textAlign: TextAlign.center)),
+            )),
+            footer: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Center(
-                    child: hasReaded
-                        ? ElevatedButton.icon(
+                    child: hasReaded ? 
+                    ElevatedButton.icon(
                             style: ButtonStyle(
                                 backgroundColor:
                                     MaterialStateProperty.all<Color>(
@@ -171,9 +178,9 @@ class _ViewPageState extends State<ViewPage> {
                                   borderRadius: BorderRadius.circular(30.0),
                                 ))),
                             onPressed: () {
-                              setState(() {
-                                hasReaded = false;
-                              });
+                             setState(() {
+                               hasReaded = false;
+                             });
                             },
                             label: const Text("Завершено"),
                             icon: const Icon(
@@ -199,7 +206,7 @@ class _ViewPageState extends State<ViewPage> {
                             },
                             child: const Text("Завершить главу"),
                           ),
-                  )))
-        ],
-      ));
+                  )),
+                  progressIndicator: const Center(child: CupertinoActivityIndicator(),),
+          ),);
 }
